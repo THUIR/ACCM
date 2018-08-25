@@ -13,7 +13,9 @@ Author: Shaoyun Shi (shisy13@outlook.com)
 
 ## Environments
 
-See in [requirements.txt](https://github.com/THUIR/ACCM/blob/master/requirements.txt)
+Python 3.5.2
+
+Packages: See in [requirements.txt](https://github.com/THUIR/ACCM/blob/master/requirements.txt)
 
 ```
 tensorflow_gpu==1.4.0
