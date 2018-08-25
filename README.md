@@ -33,11 +33,14 @@ tqdm==4.23.4
 ## Example to run the codes		
 
 ```
+> cd ACCM
+> mkdir model
+
 # ACCM with Cold-Sampling
-python CSACCM.py --warm_ratio 0.9
+> python CSACCM.py --warm_ratio 0.9
 
 # ACCM without Cold-Sampling
-python CSACCM.py --warm_ratio 1.0
+> python CSACCM.py --warm_ratio 1.0
 ```
 
 > Note that other codes ending with `*Model.py` is inherited by `CSACCM.py`
