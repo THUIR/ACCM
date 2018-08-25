@@ -26,7 +26,7 @@ tqdm==4.23.4
 
 ## Datasets
 
-- **ml-100k**: The processed ml-100k dataset can be found in [./dataset](https://github.com/THUIR/ACCM/blob/master/dataset). The origin dataset can be found [here](https://grouplens.org/datasets/movielens/). The code for processing the data can be found in [./src/ml-100k.py](https://github.com/THUIR/ACCM/blob/master/src/ml-100k.py).
+- **ml-100k**: The origin dataset can be found [here](https://grouplens.org/datasets/movielens/). The processed ml-100k dataset is in [./dataset](https://github.com/THUIR/ACCM/blob/master/dataset). The codes for processing the data are in [./src/ml-100k.py](https://github.com/THUIR/ACCM/blob/master/src/ml-100k.py).
 
 
 
@@ -43,6 +43,6 @@ tqdm==4.23.4
 > python CSACCM.py --warm_ratio 1.0
 ```
 
-> Note that other codes ending with `*Model.py` is inherited by `CSACCM.py`
+> Note that other codes ending with `*Model.py` are inherited by `CSACCM.py`
 
 Last Update Date: Aug 25, 2018
