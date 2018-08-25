@@ -11,7 +11,7 @@ RATINGS = pd.read_csv(RATINGS_FILE, sep='\t', header=None)
 USERS_FILE = os.path.join(RAW_DATA, 'ml-100k/u.user')
 USERS = pd.read_csv(USERS_FILE, sep='|', header=None)
 ITEMS_FILE = os.path.join(RAW_DATA, 'ml-100k/u.item')
-ITEMS = pd.read_csv(ITEMS_FILE, sep='|', header=None)
+ITEMS = pd.read_csv(ITEMS_FILE, sep='|', header=None, encoding="ISO-8859-1")
 OUT_DIR = '../dataset/'
 
 
@@ -23,10 +23,10 @@ def format_user_file(user_df):
     formatted[1] = formatted[1].apply(lambda x: min_age if x < min_age else x)
     formatted[1] = formatted[1].apply(lambda x: max_age / 5 if x >= max_age else min_age / 5 if x <= min_age else x / 5)
     # print Counter(formatted[1])
-    formatted[1] = formatted[1].apply(lambda x: x - formatted[1].min())
+    formatted[1] = formatted[1].apply(lambda x: int(x - formatted[1].min()))
     formatted[2] = formatted[2].apply(lambda x: {'M': 0, 'F': 1}[x])
     occupation = dict(
-        [(o.strip(), i) for i, o in enumerate(open(os.path.join(RAW_DATA, 'ml-100k/u.occupation'), 'rb').readlines())])
+        [(o.strip(), i) for i, o in enumerate(open(os.path.join(RAW_DATA, 'ml-100k/u.occupation'), 'r').readlines())])
     formatted[3] = formatted[3].apply(lambda x: occupation[x])
     formatted = formatted.fillna(-1)
     formatted.columns = ['uid', 'u_age', 'u_gender', 'u_occupation']
@@ -43,7 +43,7 @@ def format_item_file(item_df):
     min_year = 1989
     formatted[1] = formatted[1].apply(lambda x: min_year if 0 < x < min_year else x)
     formatted[1] = formatted[1].apply(lambda x: min_year + 1 if min_year < x < min_year + 4 else x)
-    years = dict([(year, i) for i, year in enumerate(Counter(formatted[1]).keys())])
+    years = dict([(year, i) for i, year in enumerate(sorted(Counter(formatted[1]).keys()))])
     formatted[1] = formatted[1].apply(lambda x: years[x])
     formatted.columns = ['iid', 'i_year',
                          'i_Action', 'i_Adventure', 'i_Animation', "i_Children's", 'i_Comedy',
@@ -66,7 +66,7 @@ def format_rating(ratings, users, items):
 
 
 def random_split_data():
-    dir_name = 'ml-100k-ci'
+    dir_name = 'ml-100k-r'
     if not os.path.exists(os.path.join(OUT_DIR, dir_name)):
         os.mkdir(os.path.join(OUT_DIR, dir_name))
     users = format_user_file(USERS)
@@ -88,6 +88,101 @@ def random_split_data():
     train_set.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.train.csv'), index=False)
     validation_set.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.validation.csv'), index=False)
     test_set.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.test.csv'), index=False)
+
+
+def split_cold_ui(item_cold_ratio=0.0, user_cold_ratio=0.0, vt_ratio=0.1, suffix=''):
+    dir_name = 'ml-100k'
+    if item_cold_ratio > 0:
+        dir_name += '-i%d' % int(item_cold_ratio * 100)
+    if user_cold_ratio > 0:
+        dir_name += '-u%d' % int(user_cold_ratio * 100)
+    dir_name += suffix
+    if not os.path.exists(os.path.join(OUT_DIR, dir_name)):
+        os.mkdir(os.path.join(OUT_DIR, dir_name))
+
+    users = format_user_file(USERS)
+    users.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.users.csv'), index=False)
+    items = format_item_file(ITEMS)
+    items.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.items.csv'), index=False)
+    all_data = format_rating(RATINGS, users, items)
+    all_data.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.all.csv'), index=False)
+
+    remain = all_data.copy()
+    validation_size = int(len(remain) * vt_ratio)
+    test_size = int(len(remain) * vt_ratio)
+    validation_index = []
+    test_index = []
+    remain_index = []
+    cold_item_index, cold_user_index = [], []
+
+    if item_cold_ratio > 0:
+        iid_list = remain.iid.unique().tolist()
+        np.random.shuffle(iid_list)
+        for iid in iid_list:
+            iid_indexes = remain[remain.iid == iid].index.tolist()
+            if len(cold_item_index) + len(iid_indexes) <= int(2 * validation_size * item_cold_ratio):
+                cold_item_index.extend(iid_indexes)
+                remain = remain.drop(iid_indexes)
+            if len(cold_item_index) + len(iid_indexes) == int(2 * validation_size * item_cold_ratio):
+                break
+        cold_item_num = len(cold_item_index) / 2
+        np.random.shuffle(cold_item_index)
+        validation_index.extend(cold_item_index[:cold_item_num])
+        test_index.extend(cold_item_index[cold_item_num:])
+
+    if user_cold_ratio > 0:
+        uid_list = remain.uid.unique().tolist()
+        np.random.shuffle(uid_list)
+        for uid in uid_list:
+            uid_indexes = remain[remain.uid == uid].index.tolist()
+            if len(cold_user_index) + len(uid_indexes) <= int(2 * validation_size * user_cold_ratio):
+                cold_user_index.extend(uid_indexes)
+                remain = remain.drop(uid_indexes)
+            if len(cold_user_index) + len(uid_indexes) == int(2 * validation_size * user_cold_ratio):
+                break
+        cold_user_num = len(cold_user_index) / 2
+        np.random.shuffle(cold_user_index)
+        validation_index.extend(cold_user_index[:cold_user_num])
+        test_index.extend(cold_user_index[cold_user_num:])
+
+    remain_uid_index = []
+    for uid, group in remain.groupby('uid'):
+        remain_uid_index.extend(group.sample(1).index.tolist())
+    remain_index.extend(remain_uid_index)
+    remain = remain.drop(remain_uid_index)
+
+    remain_iid_index = []
+    for iid, group in remain.groupby('iid'):
+        remain_iid_index.extend(group.sample(1).index.tolist())
+    remain_index.extend(remain_iid_index)
+    remain = remain.drop(remain_iid_index)
+
+    sample_index = remain.sample(validation_size - len(validation_index)).index.tolist()
+    validation_index.extend(sample_index)
+    remain = remain.drop(sample_index)
+
+    sample_index = remain.sample(test_size - len(test_index)).index.tolist()
+    test_index.extend(sample_index)
+    remain = remain.drop(sample_index)
+
+    remain_index.extend(remain.index.tolist())
+
+    validation_set = all_data.iloc[validation_index]
+    test_set = all_data.iloc[test_index]
+    train_set = all_data.iloc[remain_index]
+    # print validation_set
+    # print test_set
+    # print train_set
+
+    # train_set.sample(frac=1).to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.train.csv'), index=False)
+    # validation_set.sample(frac=1).to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.validation.csv'),
+    #                                      index=False)
+    # test_set.sample(frac=1).to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.test.csv'), index=False)
+    train_set.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.train.csv'), index=False)
+    validation_set.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.validation.csv'),
+                          index=False)
+    test_set.to_csv(os.path.join(OUT_DIR, dir_name + '/' + dir_name + '.test.csv'), index=False)
+    print(len(set(validation_index + test_index + remain_index)))
 
 
 def change_id(item_cold_ratio=0.0, user_cold_ratio=0.0, prefix='ml-100k-ci', suffix=''):
@@ -169,9 +264,7 @@ def change_id(item_cold_ratio=0.0, user_cold_ratio=0.0, prefix='ml-100k-ci', suf
 
 
 def main():
-    random_split_data()
-
-    # change_id(item_cold_ratio=0.0, user_cold_ratio=0.0)
+    change_id(item_cold_ratio=0.0, user_cold_ratio=0.0)
     # change_id(item_cold_ratio=0.1, user_cold_ratio=0.1)
     # change_id(item_cold_ratio=0.2, user_cold_ratio=0.2)
     # change_id(item_cold_ratio=0.3, user_cold_ratio=0.3)
