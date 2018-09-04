@@ -37,6 +37,7 @@ tqdm==4.23.4
 ```
 > cd ACCM
 > mkdir model
+> cd src
 
 # ACCM with Cold-Sampling
 > python CSACCM.py --warm_ratio 0.9
