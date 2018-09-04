@@ -24,7 +24,7 @@ class BaseArgs(object):
         self.parser.add_argument('--model', nargs='?',
                                  default='../model/%s/%s.ckpt' % (self.model_name, self.model_name),
                                  help='Model save path.')
-        self.parser.add_argument('--dataset', nargs='?', default='ml-100k-ci',
+        self.parser.add_argument('--dataset', nargs='?', default='ml-100k-r',
                                  help='Choose a dataset.')
         self.parser.add_argument('--label', type=str, default='rating',
                                  help='name of dataset label column.')

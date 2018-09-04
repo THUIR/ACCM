@@ -264,10 +264,11 @@ def change_id(item_cold_ratio=0.0, user_cold_ratio=0.0, prefix='ml-100k-ci', suf
 
 
 def main():
+    random_split_data()
     change_id(item_cold_ratio=0.0, user_cold_ratio=0.0)
     # change_id(item_cold_ratio=0.1, user_cold_ratio=0.1)
     # change_id(item_cold_ratio=0.2, user_cold_ratio=0.2)
-    # change_id(item_cold_ratio=0.3, user_cold_ratio=0.3)
+    change_id(item_cold_ratio=0.3, user_cold_ratio=0.3)
     # change_id(item_cold_ratio=0.4, user_cold_ratio=0.4)
     # change_id(item_cold_ratio=0.5, user_cold_ratio=0.5)
     #
