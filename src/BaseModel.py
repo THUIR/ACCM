@@ -204,14 +204,14 @@ class BaseModel(object):
         total_batch = int((num_example + eval_batch_size - 1) / eval_batch_size)
         if num_example == 0:
             return -1.0
-
+        gc.collect()
         predictions = []
         for batch in tqdm(range(total_batch), leave=False):
-            gc.collect()
             feed_dict = self.get_feed_dict(data, batch, eval_batch_size, False)
             prediction = self.sess.run(self.prediction, feed_dict=feed_dict)
             predictions.append(prediction)
         predictions = np.concatenate(predictions)
+        gc.collect()
         return predictions
 
     def evaluate(self, data):  # evaluate the results for an input set
@@ -226,15 +226,15 @@ class BaseModel(object):
     def fit(self, data):  # fit the results for an input set
         num_example = len(data['Y'])
         total_batch = int((num_example + self.batch_size - 1) / self.batch_size)
-
+        gc.collect()
         predictions = []
-        for batch in tqdm(range(total_batch), leave=False):
-            gc.collect()
+        for batch in tqdm(range(total_batch), leave=False):    
             feed_dict = self.get_feed_dict(data, batch, self.batch_size, True)
             prediction, opt = self.sess.run((self.prediction, self.optimizer), feed_dict=feed_dict)
             predictions.append(prediction)
         predictions = np.concatenate(predictions)
         labels = data['Y']
+        gc.collect()
         return self.evaluate_method(predictions, labels)
 
     def train(self, train_data, validation_data, test_data, load=False):  # fit a dataset
