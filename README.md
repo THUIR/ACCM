@@ -47,5 +47,3 @@ tqdm==4.23.4
 ```
 
 > Note that other codes ending with `*Model.py` are inherited by `CSACCM.py`
-
-Last Update Date: Aug 25, 2018
