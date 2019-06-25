@@ -2,7 +2,7 @@
 
 This is our implementation for the paper:
 
-*Shaoyun Shi, Min Zhang, Yiqun Liu, and Shaoping Ma. 2018. [Attention-based Adaptive Model to Unify Warm and Cold Starts Recommendation.](https://github.com/THUIR/ACCM) 
+*Shaoyun Shi, Min Zhang, Yiqun Liu, and Shaoping Ma. 2018. [Attention-based Adaptive Model to Unify Warm and Cold Starts Recommendation.](https://dl.acm.org/citation.cfm?id=3271710) 
 In CIKM'18.*
 
 **Please cite our paper if you use our codes. Thanks!**
