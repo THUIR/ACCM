@@ -7,7 +7,7 @@ In CIKM'18.*
 
 **Please cite our paper if you use our codes. Thanks!**
 
-Author: Shaoyun Shi (shisy13@outlook.com)
+Author: Shaoyun Shi (shisy13 AT gmail.com)
 
 
 
