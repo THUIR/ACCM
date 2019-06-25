@@ -9,6 +9,17 @@ In CIKM'18.*
 
 Author: Shaoyun Shi (shisy13 AT gmail.com)
 
+```
+@inproceedings{shi2018attention,
+  title={Attention-based Adaptive Model to Unify Warm and Cold Starts Recommendation},
+  author={Shi, Shaoyun and Zhang, Min and Liu, Yiqun and Ma, Shaoping},
+  booktitle={Proceedings of the 27th ACM International Conference on Information and Knowledge Management},
+  pages={127--136},
+  year={2018},
+  organization={ACM}
+}
+```
+
 
 
 ## Environments
